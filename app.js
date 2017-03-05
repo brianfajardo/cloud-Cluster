@@ -1,5 +1,6 @@
-const request = require('request')
 const yargs = require('yargs')
+
+const geocode = require('./geocode/geocode')
 
 const argv = yargs
     .options({
@@ -16,17 +17,15 @@ const argv = yargs
 
 const encodedAddress = encodeURIComponent(argv.address)
 
-request({
-    url: `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}`,
-    json: true /* accept JSON data back */
-}, (error, response, body) => {
+/* It's a common pattern for the first argument to be an error and the second argument to be a success result.
+*  That means either the first or the second argument will be defined, but not both.
+*  The callback knows there is an error because the first argument is defined. */
+
+geocode.geocodeAddress(encodedAddress, (error, results) => {
     if (error) {
-        console.log('Unable to connect to Google servers.')
-    } else if (body.status === 'ZERO_RESULTS') {
-        console.log('Unable to find results. May occur if address passed is non-existent.')
-    } else if (body.status === 'OK') {
-        console.log(`Address: ${body.results[0].formatted_address}`);
-        console.log(`Latitude: ${body.results[0].geometry.location.lat}`);
-        console.log(`Longitude: ${body.results[0].geometry.location.lng}`)
+        console.log(error)
+    } else {
+        console.log(results)
     }
 })
+
